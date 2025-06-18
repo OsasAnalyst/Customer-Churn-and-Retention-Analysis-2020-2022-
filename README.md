@@ -1,7 +1,7 @@
 # **Subscription Analytics: Reducing Churn for a DTC Skincare Brand**  
 
 ## **Executive Summary**  
-As the Lead Data Scientist, I worked with **SkinBloom**, a fast-growing DTC skincare subscription brand, to tackle their **20% churn rate**. Using SQL-driven insights, we identified key leakage points in their customer lifecycle and implemented targeted retention strategies.  
+As the Data Scientist, I worked on **SkinBloom** data, a fast-growing DTC skincare subscription brand, to tackle their **20% churn rate**. Using SQL-driven insights, we identified key leakage points in their customer lifecycle and implemented targeted retention strategies.  
 
 **Results:**  
 - **22.5% reduction in churn** for BASIC-tier subscribers  
@@ -53,7 +53,8 @@ FROM churn_plan AS c JOIN plan_total AS p
 ON c.subscription_type = p.subscription_type;
 ```
 
-![subscription_tier](https://github.com/user-attachments/assets/2146a7a7-66e2-49f0-acc7-8ce86be80099)
+![subscription tier](https://github.com/user-attachments/assets/1a810180-e98c-4510-80fe-59a70719a624)
+
 
 
 
