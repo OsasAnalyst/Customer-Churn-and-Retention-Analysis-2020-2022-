@@ -222,9 +222,6 @@ Real-time churn risk tracking is essential for identifying customers at risk of 
 - 💡 **Turn data leaks into growth**  
 
 ```sql
--- P.S. Want your churn analysis? Run this:  
+--Want your churn analysis? Run this:  
 SELECT * FROM dm_me_for_freelance_work;
 ```  
-
----  
-```
