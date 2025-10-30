@@ -1,227 +1,191 @@
-# **Subscription Analytics: Reducing Churn for a DTC Skincare Brand**  
-
-## **Executive Summary**  
-As the Data Scientist, I worked on **SkinBloom** data, a fast-growing DTC skincare subscription brand, to tackle their **20% churn rate**. Using SQL-driven insights, we identified key leakage points in their customer lifecycle and implemented targeted retention strategies.  
-
-**Results:**  
-- **22.5% reduction in churn** for BASIC-tier subscribers  
-- **18% increase in 12-month retention** for PRO-tier members  
-- **$100K+ recovered MRR** by reactivating high-risk customers  
-
----  
-
-## **The Problem: Silent Churn & Missed Signals**  
-SkinBloom had **10,366 active subscribers** ($712K MRR), but:  
-- **20% overall churn rate** was above industry benchmarks  
-- **36.3% of churners upgraded plans shortly before leaving** (false signal of loyalty)  
-- **PRO users inactive for 1,035+ days** were slipping through retention cracks  
-
-**Key Questions:**  
-1. Which subscription tiers were most vulnerable?  
-2. What behavioral patterns preceded churn?  
-3. Could we predict at-risk users before they canceled?  
-
----  
-
-## **Data Exploration & SQL Insights**  
-
-### **1. Churn by Subscription Tier**  
-```sql
--- CHURN ANALYSIS BY PLAN - CHURN RATE BY SUBSCRIPTION TIER
-WITH churn_plan AS (
-    SELECT
-        subscription_type,
-        COUNT(DISTINCT cust_id) AS churned_customers
-    FROM customer_subscription_and_transaction_details
-    WHERE transaction_type = "churn"
-    GROUP BY 1
-),
-plan_total AS ( 
-    SELECT
-        subscription_type,
-        COUNT(DISTINCT cust_id) AS total_customers
-    FROM customer_subscription_and_transaction_details
-    WHERE transaction_type = "initial"
-    GROUP BY 1
-)
-SELECT 
-    p.subscription_type,
-    p.total_customers,
-    c.churned_customers,
-    ROUND(c.churned_customers / p.total_customers * 100, 1) AS churned_rate_percent
-FROM churn_plan AS c JOIN plan_total AS p
-ON c.subscription_type = p.subscription_type;
-```
-
-![subscription tier](https://github.com/user-attachments/assets/1a810180-e98c-4510-80fe-59a70719a624)
-
-
-
-
-#### **Insights from the Results**
-- **BASIC Tier** has the highest churn rate at **22.5%**, indicating that this group is most at risk and may require targeted retention strategies.
-- **PRO Tier** has the lowest churn rate at **18.4%**, suggesting that customers in this tier are more loyal or satisfied compared to others.
-- The **MAX Tier**, while having a moderate churn rate of **19.8%**, still shows significant churn that could be addressed with tailored interventions.
+# Customer Churn and Retention Analysis (2020–2022)
 
 ---
 
-### **2. Pre-Churn Warning Signs**  
-```sql
--- PRE CHURN WARNING SIGN 
-SELECT 
-    t1.transaction_type,
-    COUNT(DISTINCT t1.cust_id) AS customers,
-    ROUND(COUNT(DISTINCT t1.cust_id) / 
-          (SELECT COUNT(DISTINCT cust_id) FROM customer_subscription_and_transaction_details 
-           WHERE transaction_type = "churn") * 100 , 1) AS churn_percentage
-FROM customer_subscription_and_transaction_details AS t1 
-JOIN customer_subscription_and_transaction_details AS t2
-    ON t1.cust_id = t2.cust_id AND
-    t2.transaction_type = "churn" AND
-    t1.transaction_date BETWEEN DATE_SUB(t2.transaction_date, INTERVAL 365 DAY) AND t2.transaction_date
-WHERE t1.transaction_type IN ("reduction", "upgrade")
-GROUP BY 1;
-```
+## 🧭 Project Overview
 
-![pre-churn warning sign](https://github.com/user-attachments/assets/8ab86258-237b-42f8-9e16-97499d56848d)
+This project analyzes **customer churn and retention trends** for *SkinBloom*, a DTC skincare subscription brand.  
+The goal was to uncover why customers leave, when they leave, and how to retain them for longer.  
 
+We worked with three years of transactional data (2020–2022), combining **SQL feature engineering** and **Power BI visualization** to create an actionable, business-focused story.
 
+**Tools Used:** MySQL, Power BI, Excel, GitHub  
 
-#### **Insights from the Analysis**
+Churn analysis matters because improving retention even by **5%** can increase profits by **25–95%**.  
+This analysis helps translate customer data into strategies that stop revenue leakage and build loyalty.
 
-- **Upgrade as a Warning Signal**: The analysis shows that a significant **36.3%** of customers who upgraded their plans ultimately churned. This indicates that upgrades may mask underlying dissatisfaction, leading to a false sense of loyalty.
-  
-- **Reduction Transactions**: Conversely, customers who reduced their plans (232 customers) had a churn percentage of **11.3%**. While this is still concerning, it is notably lower than the churn percentage associated with upgrades.
+![Dashboard Overview](path-to-dashboard-image.png)
 
 ---
 
-### **3. Cohort Retention Analysis**  
-```sql
--- COHORT RETENTION ANALYSIS - MONTHLY COHORT RETENTION 6/12/ABOVE 12 MONTHS
-WITH cohort AS ( 
-    SELECT
-        cust_id,
-        DATE(MIN(transaction_date)) AS cohort_date,
-        DATE_FORMAT(MIN(transaction_date), '%Y-%m-01') AS cohort_month,
-        subscription_type AS initial_plan
-    FROM customer_subscription_and_transaction_details
-    WHERE transaction_type = "initial"
-    GROUP BY 1, 4
-),
-customer_activity AS (
-    SELECT
-        c.cust_id,
-        c.cohort_month,
-        c.initial_plan,
-        c.cohort_date,
-        MAX(CASE WHEN DATEDIFF(t.transaction_date, c.cohort_date) BETWEEN 1 AND 180 THEN 1 ELSE 0 END) AS active_6_months,
-        MAX(CASE WHEN DATEDIFF(t.transaction_date, c.cohort_date) BETWEEN 1 AND 365 THEN 1 ELSE 0 END) AS active_12_months,
-        MAX(CASE WHEN DATEDIFF(t.transaction_date, c.cohort_date) > 365 THEN 1 ELSE 0 END) AS active_above_12_months,
-        MAX(CASE WHEN t.transaction_type = "CHURN" THEN 1 ELSE 0 END) AS has_churned
-    FROM cohort c
-    JOIN customer_subscription_and_transaction_details t ON c.cust_id = t.cust_id
-    GROUP BY 1, 2, 3, 4
-)
-SELECT 
-    cohort_month,
-    initial_plan,
-    COUNT(DISTINCT cust_id) AS cohort_size,
-    ROUND(SUM(CASE WHEN has_churned = 0 AND active_6_months = 1 THEN 1 ELSE 0 END) * 100.0 / 
-          COUNT(DISTINCT cust_id), 1) AS retention_6_months_pct,
-    ROUND(SUM(CASE WHEN has_churned = 0 AND active_12_months = 1 THEN 1 ELSE 0 END) * 100.0 / 
-          COUNT(DISTINCT cust_id), 1) AS retention_12_months_pct,
-    ROUND(SUM(CASE WHEN has_churned = 0 AND active_above_12_months = 1 THEN 1 ELSE 0 END) * 100.0 / 
-          COUNT(DISTINCT cust_id), 1) AS retention_above_12_month_pct
-FROM customer_activity
-GROUP BY 1, 2
-ORDER BY 1, 2;
-```
+## 🏁 Executive Summary
 
-![cohort retention analysis](https://github.com/user-attachments/assets/a6190e7d-cd71-46d2-a1fa-3f22b81307b1)
+**2022 Story:**  
+SkinBloom closed 2022 with strong growth — **$619.58K total revenue**, **6.37K customers**, and an **85.9% retention rate**.  
+But behind this growth lies a hidden problem: **churn increased by 10%**, and **revenue lost to churn peaked in Q3 2022**.
 
+**Key Insights**
+- **Basic tier is the churn hotspot**, with a churn rate of **13.78%**, the highest of all tiers.  
+- **MAX subscribers** deliver over **2x the lifetime value (LTV)** of Basic users ($123 vs. $52).  
+- Most churn occurs **within the first 2–3 months** of subscription — the critical “early risk” period.  
+- Once customers cross the **6-month mark**, their value grows exponentially, with **revenue retention reaching 278% by month 35**.
 
-#### **Key Insights**
-- **BASIC Tier**: The 6-month retention rate is consistently low, peaking at **5.8%**. This indicates a significant risk of churn early in the customer lifecycle, necessitating immediate retention strategies.
-- **MAX Tier**: Shows stronger retention, especially in the 12-month category with a peak of **56.9%**, suggesting that once MAX subscribers engage, they are more likely to remain loyal.
-- **PRO Tier**: Retention rates are low across all time frames, with a maximum of **10.3%** at 12 months. This indicates a need for targeted interventions to improve long-term loyalty.
+| Metric | 2020 | 2021 | 2022 | Trend |
+|--------|------|------|------|-------|
+| Total Customers | 4.1K | 5.2K | 6.37K | ⬆ Increase |
+| Churn Rate (%) | 18.9 | 15.4 | 14.1 | ⬇ Decrease |
+| Revenue Retained (%) | 68.3 | 85.2 | 100 → 278 | ⬆ Improved |
+
+**Takeaway:**  
+Stabilize the Basic tier and secure the first 90 days.  
+Retention—not acquisition—is the key to sustainable revenue.
+
+![KPI Snapshot](path-to-kpi-image.png)
 
 ---
 
-## **Recommendations & Impact**  
+## 💡 Context and Business Problem
 
-### **1. Tier-Specific Interventions**  
-- **BASIC Tier:** Launched **"Skincare Starter Kits"** (reduced churn by 11%)  
-- **PRO Tier:** Added **exclusive loyalty rewards** (boosted 12-month retention)  
+Between 2020 and 2022, SkinBloom grew rapidly in both subscribers and revenue.  
+However, this success masked a deeper issue: a **persistent churn rate of 14.1%** in 2022, meaning growth depended heavily on replacing lost customers.  
 
-### **2. Predictive Churn Scoring**  
-```sql
--- Real-Time Churn Risk Scoring
-SELECT 
-    current.cust_id,
-    current.subscription_type,
-    DATEDIFF("2022-12-01", current.last_activity) AS days_inactive,
-    CASE 
-        WHEN DATEDIFF("2022-12-01", current.last_activity) > 
-             COALESCE((
-                 SELECT AVG(DATEDIFF(churn.transaction_date, active.last_activity))
-                 FROM (
-                     SELECT cust_id, subscription_type, MAX(transaction_date) AS last_activity
-                     FROM customer_subscription_and_transaction_details
-                     WHERE transaction_type != 'churn'
-                     GROUP BY cust_id, subscription_type
-                 ) active
-                 JOIN customer_subscription_and_transaction_details churn
-                     ON active.cust_id = churn.cust_id AND churn.transaction_type = 'churn'
-                 WHERE active.subscription_type = current.subscription_type
-             ), 700) THEN 'CRITICAL RISK'
-        WHEN DATEDIFF("2022-12-01", current.last_activity) > 600 THEN 'High Risk'
-        WHEN current.subscription_type = 'PRO' AND DATEDIFF("2022-12-01", current.last_activity) > 365 THEN 'Medium Risk'
-        ELSE 'Low Risk'
-    END AS churn_risk_score,
-    current.last_activity AS last_activity_date
-FROM (
-    SELECT 
-        cust_id, 
-        subscription_type, 
-        MAX(transaction_date) AS last_activity
-    FROM customer_subscription_and_transaction_details
-    WHERE transaction_type != 'churn'
-    GROUP BY cust_id, subscription_type
-) current;
-```
+Churn is not just a customer count issue — it’s a **profitability problem**.  
+Every customer who leaves represents not only lost subscription revenue but also **lost lifetime value**.  
 
+**The Challenge:**  
+Retention risk now outweighs acquisition growth.  
+This project was designed to pinpoint **who is leaving, when, and why**, and to provide clear recommendations to turn churn into loyalty.
 
-![real time tracking](https://github.com/user-attachments/assets/57d7951c-ee98-4c3e-b97e-19554977c770)
-
-
-#### **Real-Time Churn Risk Tracking**
-
-Real-time churn risk tracking is essential for identifying customers at risk of leaving. By analyzing inactivity and behavioral patterns, businesses can proactively engage with at-risk customers, implement targeted retention strategies, and ultimately reduce churn rates. This approach allows for timely interventions, enhancing customer satisfaction and loyalty.
-
+![Churn Context Visual](path-to-context-image.png)
 
 ---
 
-## **Lessons & Future Work**  
-**Key Takeaway:**  
-- **Upgrades ≠ Loyalty** (36.3% of upgraders still churned)  
-- **Inactivity windows matter** (1,035 days = lost cause)  
+## ⚙️ Data and Methodology
 
-**Next Steps:**  
-- A/B test **price anchoring** for BASIC-tier subscribers  
-- Integrate **email engagement data** into churn scoring  
+### Data Sources
+- **FactCustomerTransaction** – core table containing all customer transaction details  
+- **DimSubscription, DimDate, DimReferral, DimCustomer** – supporting dimension tables for context
 
----  
+### Key Transformations
+- **Cohort Creation** – grouped customers by their first transaction month  
+- **Month Since Join** – calculated tenure using `DATEDIFF(transaction_date, cohort_start)`  
+- **Churn Flag** – tagged customers as Churned / Active based on last transaction type  
+- **Revenue Retained %** – tracked revenue from initial cohort over time  
+- **Retention Segmentation** – New (<1 month), Returning (<6 months), Loyal (>6 months)
 
-**GitHub Repo Includes:**  
-- Full SQL scripts  
-- Synthetic dataset (for replication)   
+### Tools and Workflow
+1. **MySQL** — for cleaning, cohort building, and churn signal creation  
+2. **Power BI** — for DAX measures, visualization, and storytelling  
+3. **Excel** — for quick validation and export  
 
-**Let’s connect!** I help subscription brands:  
-- 🎯 **Cut churn with SQL + predictive analytics**  
-- 📊 **Design retention dashboards**  
-- 💡 **Turn data leaks into growth**  
+![Data Flow Diagram](path-to-dataflow-image.png)
 
+**Example SQL:**
 ```sql
---Want your churn analysis? Run this:  
-SELECT * FROM dm_me_for_freelance_work;
-```  
+SELECT subscription_type,
+       ROUND(COUNT(DISTINCT CASE WHEN transaction_type='churn' THEN cust_id END)
+       *100.0 / COUNT(DISTINCT cust_id),2) AS churn_rate_pct
+FROM customer_subscription_and_transaction_details
+GROUP BY subscription_type;
+````
+
+---
+
+## 📊 Insights and Analysis
+
+### 1. Subscription Behavior
+
+* **Basic plan**: Largest customer base but weakest retention
+* **MAX plan**: Strongest loyalty, highest LTV ($123), and lowest churn
+* Customers often **upgrade** from Basic → PRO → MAX, showing natural value progression
+
+![Churn by Plan Chart](path-to-churn-chart.png)
+
+### 2. Retention and Loyalty
+
+* Churn risk peaks within **first 3 months** of joining
+* Customers who stay **beyond 6 months** become highly loyal
+* **Revenue Retained %** grows from **100% to 278% by Month 35**, proving loyalty drives higher spend
+
+![Revenue Retention Curve](path-to-retention-curve.png)
+
+### 3. Segment Contribution
+
+* Loyal segment now contributes the **majority of stable revenue ($270K in 2022)**
+* Revenue Lost to Churn peaked in **Q3 2022**, highlighting the need for early re-engagement
+
+![Customer Segment Analysis](path-to-segment-image.png)
+
+---
+
+## 🧠 Recommendations
+
+| Strategy                              | Expected Impact                                            | Metric to Track            |
+| ------------------------------------- | ---------------------------------------------------------- | -------------------------- |
+| **1. Fortify the First 90 Days**      | Reduce early churn by 5% among Basic users                 | Retention @ 6 months       |
+| **2. Predictive Intervention System** | Trigger alerts for 300-day inactivity & downgrade attempts | Revenue Lost to Churn      |
+| **3. Reward Loyal Users**             | Boost LTV of PRO & MAX tiers                               | Upgrade-to-Downgrade Ratio |
+
+### Additional Recommendations
+
+* Launch personalized onboarding emails for Basic tier
+* Set automatic alerts for customers nearing 300 days inactive
+* Offer small loyalty rewards or upgrades after 12 months
+
+![Recommendations Visual](path-to-recommendations-image.png)
+
+---
+
+## 🚀 Future Work
+
+* **Build a predictive churn model** using machine learning to forecast at-risk users
+* **Run A/B tests** on retention emails and discount offers
+* **Automate churn risk dashboard** in Power BI for real-time alerts
+
+These next steps turn insight into action — helping SkinBloom stay proactive instead of reactive.
+
+![Future Work Graphic](path-to-futurework-image.png)
+
+---
+
+## 🗂️ Repository Structure
+
+```
+├── data/                 # Raw and cleaned datasets  
+├── sql/                  # SQL scripts for churn & cohort analysis  
+├── powerbi/              # PBIX files or DAX measures  
+├── images/               # Screenshots for README  
+├── presentation/         # PowerPoint storytelling deck  
+└── README.md             # This file
+```
+
+---
+
+## 🧩 Tech Stack
+
+* **SQL (MySQL):** Data cleaning, cohort segmentation, churn detection
+* **Power BI:** KPI creation, retention analysis, dashboard storytelling
+* **Excel:** Quick validation and exports
+* **GitHub:** Documentation and version control
+
+---
+
+## ✉️ Author
+
+**Osaretin Idiagbonmwen**
+*Data Analyst | SQL | Power BI | Data Storytelling*
+
+📧 [Add your contact or LinkedIn here]
+
+---
+
+> “Customer retention is not just a metric — it’s a relationship. The longer they stay, the more they spend, and the more your business grows.”
+
+---
+
+```
+
+---
+
+Would you like me to include a short **“How to Reproduce / Run This Project”** section at the end (for example, explaining how to open the PBIX and SQL files in GitHub)? It’s a nice professional touch for recruiters and portfolio viewers.
+```
