@@ -14,11 +14,11 @@ We worked with three years of transactional data (2020–2022), combining **SQL 
 Churn analysis matters because improving retention even by **5%** can increase profits by **25–95%**.  
 This analysis helps translate customer data into strategies that stop revenue leakage and build loyalty.
 
-![Dashboard Overview](path-to-dashboard-image.png)
+![Dashboard Overview](https://github.com/user-attachments/assets/040854c2-b166-4f1c-a535-e1878c9a6c34)
 
 ---
 
-## 🏁 Executive Summary
+## Executive Summary
 
 **2022 Story:**  
 SkinBloom closed 2022 with strong growth — **$619.58K total revenue**, **6.37K customers**, and an **85.9% retention rate**.  
@@ -30,21 +30,9 @@ But behind this growth lies a hidden problem: **churn increased by 10%**, and **
 - Most churn occurs **within the first 2–3 months** of subscription — the critical “early risk” period.  
 - Once customers cross the **6-month mark**, their value grows exponentially, with **revenue retention reaching 278% by month 35**.
 
-| Metric | 2020 | 2021 | 2022 | Trend |
-|--------|------|------|------|-------|
-| Total Customers | 4.1K | 5.2K | 6.37K | ⬆ Increase |
-| Churn Rate (%) | 18.9 | 15.4 | 14.1 | ⬇ Decrease |
-| Revenue Retained (%) | 68.3 | 85.2 | 100 → 278 | ⬆ Improved |
-
-**Takeaway:**  
-Stabilize the Basic tier and secure the first 90 days.  
-Retention—not acquisition—is the key to sustainable revenue.
-
-![KPI Snapshot](path-to-kpi-image.png)
-
 ---
 
-## 💡 Context and Business Problem
+## Context and Business Problem
 
 Between 2020 and 2022, SkinBloom grew rapidly in both subscribers and revenue.  
 However, this success masked a deeper issue: a **persistent churn rate of 14.1%** in 2022, meaning growth depended heavily on replacing lost customers.  
@@ -56,7 +44,7 @@ Every customer who leaves represents not only lost subscription revenue but also
 Retention risk now outweighs acquisition growth.  
 This project was designed to pinpoint **who is leaving, when, and why**, and to provide clear recommendations to turn churn into loyalty.
 
-![Churn Context Visual](path-to-context-image.png)
+![Churn Context Visual](https://github.com/user-attachments/assets/6af22403-aebe-454f-b574-199213c90e5a)
 
 ---
 
@@ -78,7 +66,6 @@ This project was designed to pinpoint **who is leaving, when, and why**, and to 
 2. **Power BI** — for DAX measures, visualization, and storytelling  
 3. **Excel** — for quick validation and export  
 
-![Data Flow Diagram](path-to-dataflow-image.png)
 
 **Example SQL:**
 ```sql
@@ -91,7 +78,7 @@ GROUP BY subscription_type;
 
 ---
 
-## 📊 Insights and Analysis
+## Insights and Analysis
 
 ### 1. Subscription Behavior
 
@@ -99,7 +86,7 @@ GROUP BY subscription_type;
 * **MAX plan**: Strongest loyalty, highest LTV ($123), and lowest churn
 * Customers often **upgrade** from Basic → PRO → MAX, showing natural value progression
 
-![Churn by Plan Chart](path-to-churn-chart.png)
+![Churn by Plan Chart](https://github.com/user-attachments/assets/a4522916-423c-434b-be2c-438eae42fac4)
 
 ### 2. Retention and Loyalty
 
@@ -107,14 +94,14 @@ GROUP BY subscription_type;
 * Customers who stay **beyond 6 months** become highly loyal
 * **Revenue Retained %** grows from **100% to 278% by Month 35**, proving loyalty drives higher spend
 
-![Revenue Retention Curve](path-to-retention-curve.png)
+![Revenue Retention Curve](https://github.com/user-attachments/assets/e04cb2f6-8f52-4180-8b59-c5b7b8519599)
 
 ### 3. Segment Contribution
 
 * Loyal segment now contributes the **majority of stable revenue ($270K in 2022)**
 * Revenue Lost to Churn peaked in **Q3 2022**, highlighting the need for early re-engagement
 
-![Customer Segment Analysis](path-to-segment-image.png)
+![Revenue_Lost_to_Churn](https://github.com/user-attachments/assets/4a7129e6-db11-4d6c-b635-dc2c6b2f2f70)
 
 ---
 
@@ -132,7 +119,6 @@ GROUP BY subscription_type;
 * Set automatic alerts for customers nearing 300 days inactive
 * Offer small loyalty rewards or upgrades after 12 months
 
-![Recommendations Visual](path-to-recommendations-image.png)
 
 ---
 
@@ -144,7 +130,7 @@ GROUP BY subscription_type;
 
 These next steps turn insight into action — helping SkinBloom stay proactive instead of reactive.
 
-![Future Work Graphic](path-to-futurework-image.png)
+
 
 ---
 
@@ -175,17 +161,10 @@ These next steps turn insight into action — helping SkinBloom stay proactive i
 **Osaretin Idiagbonmwen**
 *Data Analyst | SQL | Power BI | Data Storytelling*
 
-📧 [Add your contact or LinkedIn here]
+📧 [Linkedin page](https://www.linkedin.com/in/osaretin-idiagbonmwen-33ab85339)
 
 ---
 
 > “Customer retention is not just a metric — it’s a relationship. The longer they stay, the more they spend, and the more your business grows.”
 
 ---
-
-```
-
----
-
-Would you like me to include a short **“How to Reproduce / Run This Project”** section at the end (for example, explaining how to open the PBIX and SQL files in GitHub)? It’s a nice professional touch for recruiters and portfolio viewers.
-```
