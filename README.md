@@ -14,7 +14,7 @@ We worked with three years of transactional data (2020–2022), combining **SQL 
 Churn analysis matters because improving retention even by **5%** can increase profits by **25–95%**.  
 This analysis helps translate customer data into strategies that stop revenue leakage and build loyalty.
 
-![Dashboard Overview](https://github.com/user-attachments/assets/040854c2-b166-4f1c-a535-e1878c9a6c34)
+![Dashboard Overview](https://github.com/user-attachments/assets/5f19cd5c-59a9-46db-b328-d83800962d4c)
 
 ---
 
