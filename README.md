@@ -137,11 +137,11 @@ These next steps turn insight into action — helping SkinBloom stay proactive i
 ## 🗂️ Repository Structure
 
 ```
-├── data/                 # Raw and cleaned datasets  
+├── data/                 # Raw datasets  
 ├── sql/                  # SQL scripts for churn & cohort analysis  
-├── powerbi/              # PBIX files or DAX measures  
-├── images/               # Screenshots for README  
-├── presentation/         # PowerPoint storytelling deck  
+├── powerbi/              # PBIX file  
+├── images/               # Screenshots 
+├── presentation/         # PowerPoint 
 └── README.md             # This file
 ```
 
